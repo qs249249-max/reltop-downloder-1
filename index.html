@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RELTOP DOWNLOADER — Save video from anywhere</title>
+<meta name="description" content="Download videos from YouTube, Instagram, TikTok, Facebook and X in the quality you choose.">
+
+<!-- ============================= -->
+<!-- PWA: installability            -->
+<!-- ============================= -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#7c5cff">
+<meta name="background-color" content="#090b12">
+
+<!-- Android / Chrome -->
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+
+<!-- iOS Safari: no manifest support, needs its own tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RELTOP">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+<!-- Windows / Desktop pinning -->
+<meta name="msapplication-TileColor" content="#7c5cff">
+<meta name="msapplication-TileImage" content="/icons/icon-192.png">
+
+<!-- Google Fonts: Sora for display/headlines, Inter for body/UI -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- FontAwesome icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================= -->
+<!-- SPLASH / INTRO SCREEN         -->
+<!-- ============================= -->
+<div id="splash" class="splash" aria-hidden="true">
+  <div class="splash__glow"></div>
+  <div class="splash__mark">
+    <i class="fa-solid fa-bolt splash__bolt"></i>
+    <h1 class="splash__title">
+      <span>RELTOP</span><span class="splash__title--outline">DOWNLOADER</span>
+    </h1>
+  </div>
+  <div class="splash__bar"><div class="splash__bar-fill"></div></div>
+</div>
+
+<!-- ============================= -->
+<!-- BACKGROUND FX (decorative)    -->
+<!-- ============================= -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="bg-fx__orb bg-fx__orb--a"></div>
+  <div class="bg-fx__orb bg-fx__orb--b"></div>
+  <div class="bg-fx__grid"></div>
+</div>
+
+<!-- ============================= -->
+<!-- TOP BAR                       -->
+<!-- ============================= -->
+<header class="topbar">
+  <div class="topbar__brand">
+    <i class="fa-solid fa-bolt topbar__brand-icon"></i>
+    <span>RELTOP<em>DOWNLOADER</em></span>
+  </div>
+
+  <div class="topbar__actions">
+    <button id="installBtn" class="install-btn" type="button" hidden>
+      <i class="fa-solid fa-arrow-down-to-bracket"></i>
+      <span>Install App</span>
+    </button>
+
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch between light and dark theme" aria-pressed="false">
+      <i class="fa-solid fa-moon theme-toggle__icon theme-toggle__icon--moon"></i>
+      <i class="fa-solid fa-sun theme-toggle__icon theme-toggle__icon--sun"></i>
+      <span class="theme-toggle__knob"></span>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================= -->
+  <!-- HERO                          -->
+  <!-- ============================= -->
+  <section class="hero">
+    <p class="hero__eyebrow-free">Free &middot; No sign-up &middot; Any device</p>
+    <h1 class="hero__title">
+      RELTOP <span class="hero__title-grad">DOWNLOADER</span>
+    </h1>
+    <p class="hero__subtitle">
+      Download videos from YouTube, Instagram, TikTok, Facebook, and more in high quality.
+    </p>
+  </section>
+
+  <!-- ============================= -->
+  <!-- DOWNLOADER CARD               -->
+  <!-- ============================= -->
+  <section class="downloader" id="downloader">
+    <div class="glass-card downloader__card">
+
+      <label for="urlInput" class="downloader__label">Paste a video link</label>
+
+      <div class="downloader__input-row">
+        <div class="downloader__input-wrap">
+          <i class="fa-solid fa-link downloader__input-icon"></i>
+          <input
+            type="url"
+            id="urlInput"
+            class="downloader__input"
+            placeholder="https://www.youtube.com/watch?v=..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button type="button" id="pasteBtn" class="downloader__paste-btn" aria-label="Paste from clipboard" title="Paste">
+            <i class="fa-solid fa-paste"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="downloader__options">
+        <div class="select-wrap">
+          <i class="fa-solid fa-film select-wrap__icon"></i>
+          <select id="qualitySelect" class="select-wrap__select" aria-label="Choose video quality or format">
+            <option value="1080p">1080p &nbsp;Full HD</option>
+            <option value="720p">720p &nbsp;HD</option>
+            <option value="480p">480p &nbsp;SD</option>
+            <option value="360p">360p &nbsp;Data saver</option>
+            <option value="mp3">MP3 &nbsp;Audio only</option>
+          </select>
+          <i class="fa-solid fa-chevron-down select-wrap__chev"></i>
+        </div>
+
+        <button type="button" id="downloadBtn" class="download-btn">
+          <span class="download-btn__label">
+            <i class="fa-solid fa-download"></i>
+            Download Now
+          </span>
+          <span class="download-btn__loading">
+            <span class="spinner"></span>
+            Fetching...
+          </span>
+        </button>
+      </div>
+
+      <p id="inputError" class="downloader__error" role="alert"></p>
+    </div>
+  </section>
+
+  <!-- ============================= -->
+  <!-- RESULT / PREVIEW SECTION      -->
+  <!-- ============================= -->
+  <section class="result" id="result" hidden>
+    <div class="glass-card result__card">
+      <div class="result__thumb">
+        <img id="resultThumbnail" class="result__thumb-img" src="" alt="Thumbnail" referrerpolicy="no-referrer" />
+        <span class="result__duration" id="resultDuration">00:00</span>
+      </div>
+
+      <div class="result__body">
+        <div class="result__top-row">
+          <h3 class="result__title" id="resultTitle">Video ready to download</h3>
+          <span class="result__badge" id="resultBadge">1080p</span>
+        </div>
+        <p class="result__source" id="resultSource"><i class="fa-solid fa-link"></i> RELTOP DOWNLOADER</p>
+
+        <div class="result__progress-track">
+          <div class="result__progress-fill" id="resultProgressFill"></div>
+        </div>
+        <div class="result__progress-meta">
+          <span id="resultProgressLabel">Video tayyar hai!</span>
+          <span id="resultProgressPct">100%</span>
+        </div>
+
+        <button type="button" id="saveBtn" class="save-btn">
+          <i class="fa-solid fa-circle-check"></i>
+          <span id="saveBtnLabel">Save to Device</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= -->
+  <!-- SUPPORTED PLATFORMS           -->
+  <!-- ============================= -->
+  <section class="platforms">
+    <h2 class="platforms__title">Works with the apps you already use</h2>
+    <div class="platforms__grid">
+      <div class="platform-card">
+        <i class="fa-brands fa-youtube platform-card__icon platform-card__icon--youtube"></i>
+        <span>YouTube</span>
+      </div>
+      <div class="platform-card">
+        <i class="fa-brands fa-instagram platform-card__icon platform-card__icon--instagram"></i>
+        <span>Instagram</span>
+      </div>
+      <div class="platform-card">
+        <i class="fa-brands fa-tiktok platform-card__icon platform-card__icon--tiktok"></i>
+        <span>TikTok</span>
+      </div>
+      <div class="platform-card">
+        <i class="fa-brands fa-facebook platform-card__icon platform-card__icon--facebook"></i>
+        <span>Facebook</span>
+      </div>
+      <div class="platform-card">
+        <i class="fa-brands fa-x-twitter platform-card__icon platform-card__icon--x"></i>
+        <span>X / Twitter</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================= -->
+<!-- FOOTER                        -->
+<!-- ============================= -->
+<footer class="footer">
+  <div class="footer__inner">
+    <p class="footer__credit">CREATED BY <span class="footer__credit-name">RAZA</span></p>
+    <p class="footer__note">RELTOP DOWNLOADER OFFICIAL WEBSITE  Please respect copyright and each platform's terms of service.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
