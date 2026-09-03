@@ -13,18 +13,9 @@ import time
 static_ffmpeg.add_paths()
 ffmpeg_exe = shutil.which("ffmpeg")
 
-# Serve the frontend (index.html, style.css, script.js, manifest.json, sw.js,
-# icons) directly from this Flask app so a single Render web service can host
-# both the API and the static site.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Disable Flask's automatic static route: we serve frontend files ourselves
-# below through an explicit whitelist so things like app.py, requirements.txt,
-# .env, and the downloads/ folder are never exposed as downloadable files.
 app = Flask(__name__, static_folder=None)
 
-# CORS only needs to cover the API routes. On Render the frontend and the API
-# are served from the same origin, so this is mainly a safety net for local
-# development or if the frontend is ever hosted elsewhere.
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 FRONTEND_FILES = {
@@ -41,8 +32,6 @@ TASK_TTL_SECONDS = 60 * 60  # 1 hour, used to clean up old in-memory tasks
 
 
 def cleanup_old_tasks():
-    """Render's disk is ephemeral and this app keeps task state in memory,
-    so periodically drop old finished tasks to avoid unbounded growth."""
     now = time.time()
     stale_ids = [
         t_id for t_id, task in download_tasks.items()
@@ -96,13 +85,11 @@ def start_download():
                 download_tasks[t_id]['status'] = 'Merging High Quality HD Video & Audio...'
 
         try:
-            # Dropdown/Quality string se target height extract karein (e.g. '1080p' ya '1080p full hd' -> 1080)
             height_match = re.search(r'(\d+)', q_str)
             target_height = height_match.group(1) if height_match else None
 
-            # Base options
+            # Updated options with bot-detection bypass
             ydl_opts = {
-                # Unique filename format taake purani low-quality video repeat na ho
                 'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s_%(height)sp_{t_id[:6]}.%(ext)s',
                 'no_warnings': True,
                 'merge_output_format': 'mp4',
@@ -111,6 +98,14 @@ def start_download():
                 'overwrites': True,
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-us,en;q=0.5',
+                    'Sec-Fetch-Mode': 'navigate',
+                },
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android', 'web'],
+                    }
                 }
             }
 
@@ -125,7 +120,6 @@ def start_download():
                     'preferredquality': '192',
                 }]
             elif target_height:
-                # Target height tak ki Best Video + Best Audio
                 ydl_opts['format'] = f'bestvideo[height<={target_height}]+bestaudio/bestvideo[height<={target_height}]+bestaudio/best[height<={target_height}]/best'
             else:
                 ydl_opts['format'] = 'bestvideo+bestaudio/best'
@@ -182,8 +176,6 @@ def get_progress(task_id):
 
 @app.route('/api/get-file/<filename>', methods=['GET'])
 def get_file(filename):
-    # Prevent path traversal (e.g. "../app.py") — only allow plain filenames
-    # that live directly inside DOWNLOAD_FOLDER.
     safe_name = os.path.basename(filename)
     file_path = os.path.join(DOWNLOAD_FOLDER, safe_name)
     if os.path.exists(file_path):
@@ -191,9 +183,6 @@ def get_file(filename):
     return jsonify({'error': 'File nahi mili'}), 404
 
 
-# ---------------------------------------------------------------------------
-# Frontend static files (served from the same Flask app on Render)
-# ---------------------------------------------------------------------------
 @app.route('/')
 def serve_index():
     return send_from_directory(BASE_DIR, 'index.html')
@@ -215,6 +204,4 @@ if __name__ == '__main__':
         print(f"FFmpeg Status: OK ({ffmpeg_exe})")
     else:
         print("FFmpeg Status: WARNING (Not found)")
-    # debug=False for production-safe defaults; Render always runs via
-    # gunicorn (see Procfile), this block only matters for local `python app.py` runs.
     app.run(host='0.0.0.0', port=port, debug=False)
